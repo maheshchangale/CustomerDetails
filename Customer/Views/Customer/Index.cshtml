@@ -1,0 +1,73 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Customer Login</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <style>
+        .ml-28 {
+            margin-left: 28%;
+        }
+
+        .ml-43 {
+            margin-left: 43%;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6 offset-md-3">
+                <h2 class="ml-28">Customer Login</h2>
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="email">Email:</label>
+                        <input type="email" class="form-control" id="email" placeholder="Enter email">
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password:</label>
+                        <input type="password" class="form-control" id="password" placeholder="Enter password">
+                    </div>
+                    <button type="submit" class="btn btn-primary ml-43">Login</button>
+                </form>
+            </div>
+        </div>
+    </div>
+  
+</body>
+</html>
+
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $('#loginForm').submit(function (e) {
+            e.preventDefault(); 
+
+            var email = $('#email').val();
+            var password = $('#password').val();
+                     
+            $.ajax({
+                url: '/Customer/Login',
+                type: 'POST',
+                data: {
+                    email: email,
+                    password: password
+                },
+                success: function (response) {
+
+                    if (response === "Login Successfully") {
+                       
+                        window.location.href = '/Customer/CustomerDetails';
+                    } else {
+                        
+                        alert('Invalid User Name and Password .');
+                    }
+                },
+                error: function () {
+                    alert('error occurred...');
+                }
+            });
+        });
+    });
+</script>

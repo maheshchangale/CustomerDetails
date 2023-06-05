@@ -1,0 +1,200 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        .ml-80{
+            margin-left:80%;
+        }
+
+        .ml-38 {
+            margin-left: 38%;
+        }
+    </style>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+</head>
+<body>
+    <h2 class="ml-38">Customer Details</h2>
+    <div class="container mt-5">
+        <button type="button" class="btn btn-primary" id="myModalBtn" data-toggle="modal" data-target="#myModal">Add Customer</button>
+        <button type="button" class="btn btn-light ml-80" id="Logout" onclick="Logout()">Logout</button>
+        <div style="overflow-x: auto;">
+            <table id="CustomerDetailsTable" class="table">
+                <thead>
+                    <tr>
+                        <th>Customer Name</th>
+                        <th>Mobile Number</th>
+                        <th>Addrsss</th>
+                        <th>Date of Birth</th>
+                        <th>Email</th>
+                    </tr>
+                </thead>
+                <tbody id="CustomerTableBody"></tbody>
+            </table>
+        </div>
+     
+
+    </div>
+
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="myModalLabel">Customer Details</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="email">Customer Name:</label>
+                        <input type="text" class="form-control" id="customer_name" placeholder="Customer Name">
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Mobile Number:</label>
+                        <input type="text" class="form-control" id="customer_mobile" placeholder="Mobile Number">
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Address:</label>
+                        <input type="text" class="form-control" id="customer_address" placeholder="Address">
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Date of Birth:</label>
+                        <input type="text" class="form-control" id="customer_dob" placeholder="Dob">
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email Id:</label>
+                        <input type="text" class="form-control" id="customer_email" placeholder="Email Id">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-success" onclick="SaveCustomerDetails()">Add Customer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+</body>
+</html>
+
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+<script>
+    let CUSTOMER_LIST = [];
+    $(document).ready(function () {
+        GetCustomerDetails();
+    });
+
+    function GetCustomerDetails() {
+
+        $.ajax({
+            url: '/Customer/CustomerDetailsList',
+            method: "GET",
+            cache: false,
+            data: {},
+            success: function (data) {
+                CUSTOMER_LIST=[];
+                CUSTOMER_LIST = data.result;
+                console.log(CUSTOMER_LIST);
+            },
+            error: function (reponse) {
+                console.log("error : " + reponse);
+            }
+        });
+
+        // Append Customer Details in table
+        setTimeout(function () {
+            CUSTOMER_LIST.map((x) => {
+                var newRow = '<tr>' +
+                    `<td><input type="text" value="${x.customer_name}" name="customer_name" /></td>` +
+                    `<td><input type="text" value="${x.customer_mobile}" name="customer_mobile" /></td>` +
+                    `<td><input type="text" value="${x.customer_address}" name="customer_address" /></td>` +
+                    `<td><input type="text" value="${x.customer_dob}" name="customer_dob" /></td>` +
+                    `<td><input type="text" value="${x.customer_email}" name="customer_email" /></td>` +
+                    '</tr>';
+
+                $('#CustomerTableBody').append(newRow);
+            });
+        }, 4000);
+
+    }
+
+    function SaveCustomerDetails() {
+
+        // Check validation
+        if ($('#customer_name').val().trim() == '') {
+            $('#customer_name').focus();
+            alert("Customer name cannot be empty");
+            return false;
+        }
+        if ($('#customer_email').val().trim() == '') {
+            $('#customer_email').focus();
+            alert("email id cannot be empty");
+            return false;
+        }
+
+        var CustomerDetailsModel = {};
+
+        CustomerDetailsModel.customer_name = $(`#customer_name`).val();
+        CustomerDetailsModel.customer_mobile = $(`#customer_mobile`).val();
+        CustomerDetailsModel.customer_address = $(`#customer_address`).val();
+        CustomerDetailsModel.customer_dob = $(`#customer_dob`).val();
+        CustomerDetailsModel.customer_email = $(`#customer_email`).val();
+
+        $.ajax({
+            url: '/Customer/SaveCustomerDetails',
+            method: "POST",
+            cache: false,
+            data: { CustomerDetailsModel: CustomerDetailsModel },
+            success: function (data) {
+
+                if (data == "Customer Saved Successfully") {
+                    $('#myModal').modal('hide');
+                    CUSTOMER_LIST = [];
+                    GetCustomerDetails();
+                    EmptyInputValues();
+                    alert("Customer Saved Successfully");
+
+                } else {
+                    alert("error");
+                }
+            },
+            error: function (reponse) {
+                console.log("error : " + reponse);
+            }
+        });
+
+    }
+
+    function EmptyInputValues() {
+        $("#customer_name").val("");
+        $("#customer_mobile").val("");
+        $("#customer_address").val("");
+        $("#customer_dob").val("");
+        $("#customer_email").val("");
+    }
+
+    function Logout() {
+
+        $.ajax({
+            url: '/Customer/Logout',
+            method: "POST",
+            cache: false,
+            data: {},
+            success: function (data) {
+                if (data == "Logout successfully") {
+                    window.location.href = '/Customer/Index';
+                } else {
+                    alert("error");
+                }
+            },
+            error: function (reponse) {
+                console.log("error : " + reponse);
+            }
+        });
+
+    }
+
+</script>
